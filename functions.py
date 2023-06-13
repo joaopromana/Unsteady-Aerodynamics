@@ -65,7 +65,7 @@ class VortexPanelGeometry():
             self.end[i, :] = [x_end, z_end]
             self.controlpoint[i, :] = [0.25 * x_start + 0.75 * x_end, 0.25 * z_start + 0.75 * z_end]
             self.vortex[i, :] = [0.75 * x_start + 0.25 * x_end, 0.75 * z_start + 0.25 * z_end]
-
+            
 
     def CreateVectors(self):
         # normal and tangential vectors of each panel
@@ -191,7 +191,7 @@ class Kinematics():
         end_E = self.end_E
 
         self.shed_vortex = np.zeros(2)
-
+        TE_location = np.array((0.5, 0.5))
         if shed_vortex_factor == -1: # steady state, shed vortex at infinity
             self.shed_vortex[0] = 1.e7 * chord
 
@@ -471,7 +471,6 @@ def PlotVelocityField(X, Z, U, W, U_mag, geometry, x, z):
     ax.set_aspect('equal')
     ax.set_xlabel(r'$x/c$')
     ax.set_ylabel(r'$z/c$')
-    ax.grid()
 
 
 def PlotPressureField(X, Z, Cp, geometry):
@@ -481,7 +480,6 @@ def PlotPressureField(X, Z, Cp, geometry):
     ax.set_aspect('equal')
     ax.set_xlabel(r'$x/c$')
     ax.set_ylabel(r'$z/c$')
-    ax.grid()
     fig.colorbar(im, ax = ax, label=r'$C_p$')
     # plot airfoil
     geometry.Plot(ax)
@@ -518,7 +516,7 @@ def SensitivityNumberOfElements(chord, rotation_point, U_inf, rho):
 
     Cl = np.zeros((len(alpha_distribution), len(N_distribution)))
 
-    for i in range(len(alpha_distribution)):
+    for i in tqdm(range(len(alpha_distribution))):
         for j in range(len(N_distribution)):
             airfoil = VortexPanelGeometry(chord, N_distribution[j], alpha_distribution[i], rotation_point)
             kinematics = Kinematics(airfoil, U_inf, 0, 0, 0, 0, airfoil.end[-1], -1)
