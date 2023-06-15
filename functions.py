@@ -46,8 +46,8 @@ class VortexPanelGeometry():
             cos_beta = np.cos(np.radians(- self.beta))
             sin_beta = np.sin(np.radians(- self.beta))
             for i in range(len(nodes) - N_flap, len(nodes)):
-                self.coords[i, 0] = (0.5 - flap_chord) * chord + cos_beta * (self.coords[i, 0] - (0.5 - flap_chord) * chord)
-                self.coords[i, 1] = sin_beta * (self.coords[i, 0] - (0.5 - flap_chord) * chord)
+                self.coords[i, 0] = (1 - rotation_point - flap_chord) * chord + cos_beta * (self.coords[i, 0] - (1 - rotation_point - flap_chord) * chord)
+                self.coords[i, 1] = sin_beta * (self.coords[i, 0] - (1 - rotation_point - flap_chord) * chord)
 
         # rotate nodes with alpha
         sin_alpha = np.sin(np.deg2rad(alpha))
@@ -391,7 +391,7 @@ class SolutionProperties():
                     self.V_induced_wake[i, j - 1, :] = tran_Mat_B @ V_induced_wake_E
 
         for i in range(N): # velocity induced by shed vortex at latest time step
-            V_induced_wake_E = shed_vortex * self.solution.InducedVelocity(controlpoint_E[i, :], shed_vortex)
+            V_induced_wake_E = self.solution.circulation[-1] * self.solution.InducedVelocity(controlpoint_E[i, :], shed_vortex)
 
             self.V_induced_wake[i, iteration - 1, :] = tran_Mat_B @ V_induced_wake_E
 

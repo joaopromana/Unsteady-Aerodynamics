@@ -10,13 +10,13 @@ U_inf = -50                     # x-component of inertial velocity [m/s]
 chord = 1                       # airfoil chord [m]
 N = 20                          # number of vortex elements
 pitch_0 = 5                     # pitch in steady state (AoA) [degrees]                 
-rotation_point = 0.5 * chord   # rotation point of airfoil
+rotation_point = 0.25 * chord   # rotation point of airfoil
 Nx = 100                        # number of elements in x-direction                     (UNSTEADY)
 Nz = 40                         # number of elements in z-direction                     (UNSTEADY)
 Nt = 350                        # number of time steps                                  (UNSTEADY)
 dt = 0.01                       # time step [sec]                                       (UNSTEADY)
 A_pitch = 5                     # pitch amplitude (sinusoidal pitching) [degrees]       (UNSTEADY)
-kappa = 0.02                    # reduced frequency                                     (UNSTEADY)
+kappa = 0.1                     # reduced frequency                                     (UNSTEADY)
 shed_vortex_factor = 0.25       # between 0.2 and 0.3                                   (UNSTEADY)
 
 T = dt * (Nt - 1)
@@ -38,8 +38,8 @@ if choice == '1':
 
     x_lim = [-1.5 * chord, 1.5 * chord]
     z_lim = [-1.5 * chord, 1.5 * chord]
-    Nx = 200
-    Nz = 200
+    Nx = 50
+    Nz = 50
     alpha_range = [-10, 25]
     N_alpha = 40
     
@@ -126,8 +126,8 @@ elif choice == '5':
 
     x_lim = [-1.5 * chord, 1.5 * chord]
     z_lim = [-1.5 * chord, 1.5 * chord]
-    Nx = 200
-    Nz = 200
+    Nx = 50
+    Nz = 50
     alpha_range = [-10, 25]
     N_alpha = 40
     
