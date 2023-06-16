@@ -190,7 +190,6 @@ class Kinematics():
 
         if shed_vortex_factor == -1: # steady state, shed vortex at downwind infinity
             self.shed_vortex[0] = - 1.e7 * chord
-
         else: # unsteady, calculate with trailing edge location
             self.shed_vortex[:] = (shed_vortex_factor * (np.abs(TE_location - end_E[-1]))) + end_E[-1]
 
@@ -235,7 +234,7 @@ class SystemSolution():
                 V_induced = self.InducedVelocity(controlpoint[i, :], vortex[j, :])
                 self.InductionMatrix[i, j] = np.dot(V_induced, normal[i, :])
 
-        # inflluence of shed vortices with unknown location
+        # influence of shed vortices with unknown location
         for i in range(N):
             V_induced_E = self.InducedVelocity(controlpoint_E[i, :], shed_vortex) # inertial reference of frame
             V_induced_B = tran_Mat_B @ V_induced_E
@@ -409,7 +408,7 @@ class SolutionProperties():
                     V_induced_wake_E = circulation * self.solution.InducedVelocity(controlpoint_E[i, :], location)
 
                     self.V_induced_wake[i, :] += tran_Mat_B @ V_induced_wake_E
-
+        
         for i in range(N): # velocity induced by shed vortex at latest time step
             V_induced_wake_E = self.solution.circulation[-1] * self.solution.InducedVelocity(controlpoint_E[i, :], shed_vortex)
 
@@ -521,36 +520,7 @@ def PlotLiftCoefficient(alpha, Cl, multi_variate = False, beta = 0):
     ax.legend()
 
 
-def SensitivityNumberOfElements(chord, rotation_point, U_inf, rho):
-    # effect of value of N for steady state flow   
-    N_distribution = np.array([1, 3, 5, 7, 10, 15, 20])
-    alpha_distribution = np.array([0, 5, 10, 15])
-
-    Cl_true = 2 * np.pi * np.deg2rad(alpha_distribution)
-
-    Cl = np.zeros((len(alpha_distribution), len(N_distribution)))
-
-    for i in tqdm(range(len(alpha_distribution))):
-        for j in range(len(N_distribution)):
-            airfoil = VortexPanelGeometry(chord, N_distribution[j], alpha_distribution[i], rotation_point)
-            kinematics = Kinematics(airfoil, U_inf, 0, 0, 0, 0, airfoil.end[-1], -1)
-            solution = SystemSolution(airfoil, kinematics, 1, 1, 0, 0)
-            solution_properties = SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, U_inf, 1)
-
-            Cl[i, j] = solution_properties.Cl
-    
-    # Plot results
-    fig, ax = plt.subplots(figsize = (12, 6))
-    colors = ['k', 'r', 'b', 'g']
-    for i in range(len(alpha_distribution)):
-        ax.plot(N_distribution, np.abs(Cl_true[i] - Cl[i]), colors[i] + '-o', ms=1, lw=1, label=r'$\alpha=%0.1f \ [deg]$' % alpha_distribution[i])
-    ax.set_xlabel(r'$N_{panels}$')
-    ax.set_ylabel(r'$|{C_l}_{True} - C_l|$')
-    ax.grid()
-    ax.legend()
-
-
-def Theodorsen(kinematics, solutionProperties, time, kappa, chord, rotation_point, f_pitch, A_pitch, pitch, dt, Cl_steady, alpha_steady):
+def Theodorsen(kinematics, solutionProperties, time, kappa, chord, rotation_point, f_pitch, A_pitch, pitch, dt, Cl_steady = [], alpha_steady = []):
     # unsteady lift of a harmonically oscillating airfoil
     hankel2_0 = spec.hankel2(0, kappa)
     hankel2_1 = spec.hankel2(1, kappa)
@@ -573,7 +543,7 @@ def Theodorsen(kinematics, solutionProperties, time, kappa, chord, rotation_poin
         alpha_theodorsen.append(np.rad2deg(np.real(np.deg2rad(pitch) + np.deg2rad(A_pitch) * np.exp(1j * f_pitch * 2 * np.pi * time[i]))))
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(alpha_theodorsen, Cl_theodorsen, 'r-', lw = 1, ms = 1, label=r'Unsteady Theodorsen')
+    ax.plot(alpha_theodorsen, Cl_theodorsen, 'r-', lw = 1, ms = 1, label=r'Theodorsen')
     ax.plot(alpha_steady, Cl_steady, 'b-', lw = 1, ms = 1, label=r'Steady')
     ax.plot(alpha, Cl_unsteady, 'k-o', lw = 1, ms = 1, label=r'Unsteady')
     ax.grid()
@@ -627,16 +597,55 @@ def Theodorsen(kinematics, solutionProperties, time, kappa, chord, rotation_poin
     return RMSE
 
 
+def SensitivityNumberOfElements(A_pitch, f_pitch, pitch_0, chord, rotation_point, U_inf, rho, shed_vortex_factor, kappa):
+    # effect of value of N for unsteady state flow 
+    dt = 0.01   
+    Nt = 700
+    T = dt * (Nt - 1)
+    time = np.linspace(0, T, Nt)
+
+    N_distribution = np.array([1, 3, 5, 7, 10, 15, 20])
+
+    CLdiff = np.zeros(len(N_distribution))
+
+    for j in range(len(N_distribution)):
+        print('N =' + str(N_distribution[j]))
+        arr_kinematics = np.empty(Nt, dtype='object')
+        arr_properties = np.empty(Nt, dtype='object')
+        arr_wake = np.empty(Nt, dtype='object')
+
+        airfoil = VortexPanelGeometry(chord, N_distribution[j], pitch_0, rotation_point)
+        arr_kinematics[0] = Kinematics(airfoil, U_inf, 0, 0, A_pitch, f_pitch, airfoil.end[-1], shed_vortex_factor)
+    
+        for i in tqdm(range(1, Nt)):
+            arr_kinematics[i] = Kinematics(airfoil, U_inf, 0, time[i], A_pitch, f_pitch, arr_kinematics[i - 1].end_E[-1], shed_vortex_factor)
+
+            solution = SystemSolution(airfoil, arr_kinematics[i], i, dt, arr_properties[i - 1], arr_wake[0:i])
+            arr_properties[i] = SolutionProperties(airfoil, arr_kinematics[i], solution, arr_wake[0:i], i, arr_properties[i-1], rho, -U_inf, dt)
+
+            arr_wake[i] = WakeProperties(solution, arr_kinematics[i], airfoil, arr_wake[0:i], dt, i)
+
+        CLdiff[j] = Theodorsen(arr_kinematics, arr_properties, time, kappa, chord, rotation_point, f_pitch, A_pitch, pitch_0, dt)
+
+    # plot result
+    fig, ax = plt.subplots(figsize = (12, 6))
+    ax.plot(N_distribution, CLdiff, 'k-o', ms = 1, lw = 1)
+    ax.set_xlabel(r'$N_{panels}$')
+    ax.set_ylabel(r'RMSE($C_l$)')
+    ax.grid()
+
+
 def SensitivityTimeStep(A_pitch, f_pitch, pitch_0, chord, rotation_point, U_inf, rho, shed_vortex_factor, kappa):
     # effect of value of dt for unsteady state flow 
-    arr_dt = [0.005, 0.0075, 0.01, 0.025, 0.05, 0.1, 1.0]
+    dt_distribution = [0.005, 0.0075, 0.01, 0.025, 0.05, 0.1, 1.0]
     N = 20
     Nt = 700
 
-    CLdiff = np.zeros(len(arr_dt))
+    CLdiff = np.zeros(len(dt_distribution))
 
-    for j in range(len(arr_dt)):
-        dt = arr_dt[j]
+    for j in range(len(dt_distribution)):
+        dt = dt_distribution[j]
+        print('dt =' + str(dt))
 
         T = dt * (Nt - 1)                           
         time = np.linspace(0, T, Nt)
@@ -654,14 +663,14 @@ def SensitivityTimeStep(A_pitch, f_pitch, pitch_0, chord, rotation_point, U_inf,
             solution = SystemSolution(airfoil, arr_kinematics[i], i, dt, arr_properties[i - 1], arr_wake[0:i])
             arr_properties[i] = SolutionProperties(airfoil, arr_kinematics[i], solution, arr_wake[0:i], i, arr_properties[i-1], rho, -U_inf, dt)
 
-            arr_wake[i] = WakeProperties(solution, arr_kinematics[i])
+            arr_wake[i] = WakeProperties(solution, arr_kinematics[i], airfoil, arr_wake[0:i], dt, i)
 
         CLdiff[j] = Theodorsen(arr_kinematics, arr_properties, time, kappa, chord, rotation_point, f_pitch, A_pitch, pitch_0, dt)
 
     # Plot result
     fig, ax = plt.subplots(figsize = (12, 6))
-    ax.plot(arr_dt, CLdiff, 'k-o', ms = 1, lw = 1)
+    ax.plot(dt_distribution, CLdiff, 'k-o', ms = 1, lw = 1)
     ax.set_xlabel(r'$\Delta t [s]$')
-    ax.set_ylabel(r'RMSE of $C_l$')
+    ax.set_ylabel(r'RMSE($C_l$)')
     ax.grid()
 

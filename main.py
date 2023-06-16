@@ -7,8 +7,9 @@ from tqdm import tqdm
 # program parameters
 rho = 1.0                       # density [kg/m^3]
 U_inf = -50                     # x-component of inertial velocity [m/s]
+W_inf = 0                       # z-component of inertial velocity [m/s]
 chord = 1                       # airfoil chord [m]
-N = 20                          # number of vortex elements
+N = 10                          # number of vortex elements
 pitch_0 = 5                     # pitch in steady state (AoA) [degrees]                 
 rotation_point = 0.25 * chord   # rotation point of airfoil
 Nx = 100                        # number of elements in x-direction                     (UNSTEADY)
@@ -21,17 +22,19 @@ shed_vortex_factor = 0.25       # between 0.2 and 0.3                           
 flap_chord = 0.25               # flap length [1/c]
 beta_0 = 10                     # flap angle [degrees] 
 
+U_mag = np.linalg.norm((U_inf, W_inf))
 T = dt * (Nt - 1)
 time = np.linspace(0, T, Nt)
 f_pitch = - 2 * U_inf * kappa / (2 * np.pi * chord)
 
 # Present options to user
 print('1 - Steady Airfoil at Different Angles of Attack')
-print('2 - Sensitivity Study with respect to Number of Elements')
-print('3 - Pitching Airfoil at Different Reduced Frequencies')
+print('2 - Pitching Airfoil at Different Reduced Frequencies')
+print('3 - Sensitivity Study with respect to Number of Elements')
 print('4 - Sensitivity Study with respect to Time Step')
 print('5 - Steady Airfoil with Flap at Different Amplitudes')
 print('6 - Pitching Airfoil with Flap at Different Reduced Frequencies')
+print('7 - Unsteady Airfoil under Gust')
 
 choice = input('Select an option: ')
 
@@ -53,20 +56,20 @@ if choice == '1':
 
     for i in tqdm(range(N_alpha)):
         airfoil = fcn.VortexPanelGeometry(chord, N, alpha[i], rotation_point)
-        kinematics = fcn.Kinematics(airfoil, U_inf, 0, 0, 0, 0, airfoil.end[-1], -1)
+        kinematics = fcn.Kinematics(airfoil, U_inf, 0, 1, 0, 0, airfoil.end[-1], -1)
         solution = fcn.SystemSolution(airfoil, kinematics, 1, 1, 0, 0)
-        solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, -U_inf, 1)
+        solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, U_mag, 1)
         Cl[i] = solution_properties.Cl
 
     airfoil = fcn.VortexPanelGeometry(chord, N, pitch_0, rotation_point)
-    kinematics = fcn.Kinematics(airfoil, U_inf, 0, 0, 0, 0, airfoil.end[-1], -1)
+    kinematics = fcn.Kinematics(airfoil, U_inf, 0, 1, 0, 0, airfoil.end[-1], -1)
     solution = fcn.SystemSolution(airfoil, kinematics, 1, 1, 0, 0)
     X, Z, U, W, Cp = solution.FlowField(x_lim, z_lim, Nx, Nz, U_inf, 0)
 
     print("Finished Simulation")
 
     fcn.PlotPressureField(X, Z, Cp, airfoil)
-    fcn.PlotVelocityField(X, Z, U, W, -U_inf, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
+    fcn.PlotVelocityField(X, Z, U, W, U_mag, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
 
     plt.show()
 
@@ -74,12 +77,6 @@ if choice == '1':
 
 
 elif choice == '2':
-    print()
-
-    fcn.SensitivityNumberOfElements(chord, rotation_point, U_inf, rho)
-
-
-elif choice == '3':
     print()
 
     x_lim = [-1.5 * chord, 4.5 * chord]
@@ -100,7 +97,7 @@ elif choice == '3':
         arr_kinematics[i] = fcn.Kinematics(airfoil, U_inf, 0, time[i], A_pitch, f_pitch, arr_kinematics[i - 1].end_E[-1], shed_vortex_factor)
   
         solution = fcn.SystemSolution(airfoil, arr_kinematics[i], i, dt, arr_properties[i - 1], arr_wake[0:i])
-        arr_properties[i] = fcn.SolutionProperties(airfoil, arr_kinematics[i], solution, arr_wake[0:i], i, arr_properties[i-1], rho, -U_inf, dt)
+        arr_properties[i] = fcn.SolutionProperties(airfoil, arr_kinematics[i], solution, arr_wake[0:i], i, arr_properties[i-1], rho, U_mag, dt)
     
         arr_wake[i] = fcn.WakeProperties(solution, arr_kinematics[i], airfoil, arr_wake[0:i], dt, i)
 
@@ -120,16 +117,22 @@ elif choice == '3':
         airfoil = fcn.VortexPanelGeometry(chord, N, alpha_steady[i], rotation_point)
         kinematics = fcn.Kinematics(airfoil, U_inf, 0, 0, 0, 0, airfoil.end[-1], -1)
         solution = fcn.SystemSolution(airfoil, kinematics, 1, 1, 0, 0)
-        solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, -U_inf, 1)
+        solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, U_mag, 1)
         Cl_steady[i] = solution_properties.Cl
 
     print('Finished Simulation')
 
-    fcn.PlotVelocityField(X, Z, U, W, -U_inf, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
+    fcn.PlotVelocityField(X, Z, U, W, U_mag, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
 
     plt.show()
 
     fcn.Theodorsen(arr_kinematics, arr_properties, time, kappa, chord, rotation_point, f_pitch, A_pitch, pitch_0, dt, Cl_steady, alpha_steady)
+
+
+elif choice == '3':
+    print()
+
+    fcn.SensitivityNumberOfElements(A_pitch, f_pitch, pitch_0, chord, rotation_point, U_inf, rho, shed_vortex_factor, kappa)
 
 
 elif choice == '4':
@@ -164,7 +167,7 @@ elif choice == '5':
             airfoil = fcn.VortexPanelGeometry(chord, N, alpha[i], rotation_point, flap_chord, beta[j])
             kinematics = fcn.Kinematics(airfoil, U_inf, 0, 0, 0, 0, airfoil.end[-1], -1)
             solution = fcn.SystemSolution(airfoil, kinematics, 1, 1, 0, 0)
-            solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, -U_inf, 1)
+            solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, U_mag, 1)
             Cl[i, j] = solution_properties.Cl
 
     print("Finished Simulation")
@@ -172,13 +175,13 @@ elif choice == '5':
     airfoil = fcn.VortexPanelGeometry(chord, N, pitch_0, rotation_point, flap_chord, beta_0)
     kinematics = fcn.Kinematics(airfoil, U_inf, 0, 0, 0, 0, airfoil.end[-1], -1)
     solution = fcn.SystemSolution(airfoil, kinematics, 1, 1, 0, 0)
-    solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, -U_inf, 1)
+    solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, U_mag, 1)
     X, Z, U, W, Cp = solution.FlowField(x_lim, z_lim, Nx, Nz, U_inf, 0)
 
     print("Finished Simulation")
 
     fcn.PlotPressureField(X, Z, Cp, airfoil)
-    fcn.PlotVelocityField(X, Z, U, W, -U_inf, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
+    fcn.PlotVelocityField(X, Z, U, W, U_mag, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
 
     plt.show()
 
@@ -206,7 +209,7 @@ elif choice == '6':
         arr_kinematics[i] = fcn.Kinematics(airfoil, U_inf, 0, time[i], A_pitch, f_pitch, arr_kinematics[i - 1].end_E[-1], shed_vortex_factor)
   
         solution = fcn.SystemSolution(airfoil, arr_kinematics[i], i, dt, arr_properties[i - 1], arr_wake[0:i])
-        arr_properties[i] = fcn.SolutionProperties(airfoil, arr_kinematics[i], solution, arr_wake[0:i], i, arr_properties[i-1], rho, -U_inf, dt)
+        arr_properties[i] = fcn.SolutionProperties(airfoil, arr_kinematics[i], solution, arr_wake[0:i], i, arr_properties[i-1], rho, U_mag, dt)
     
         arr_wake[i] = fcn.WakeProperties(solution, arr_kinematics[i], airfoil, arr_wake[0:i], dt, i)
 
@@ -226,16 +229,16 @@ elif choice == '6':
         airfoil = fcn.VortexPanelGeometry(chord, N, alpha_steady[i], rotation_point, flap_chord, beta_0)
         kinematics = fcn.Kinematics(airfoil, U_inf, 0, 0, 0, 0, airfoil.end[-1], -1)
         solution = fcn.SystemSolution(airfoil, kinematics, 1, 1, 0, 0)
-        solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, -U_inf, 1)
+        solution_properties = fcn.SolutionProperties(airfoil, kinematics, solution, 0, 1, 0, rho, U_mag, 1)
         Cl_steady[i] = solution_properties.Cl
 
     print('Finished Simulation')
 
-    fcn.PlotVelocityField(X, Z, U, W, -U_inf, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
+    fcn.PlotVelocityField(X, Z, U, W, U_mag, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
 
     plt.show()
 
-    fcn.Theodorsen(arr_kinematics, arr_properties, time, kappa, chord, rotation_point, f_pitch, A_pitch, pitch_0, dt, Cl_steady, alpha_steady)
+    fcn.Theodorsen(arr_kinematics, arr_properties, time, kappa, chord, rotation_point, f_pitch, A_pitch, pitch_0, dt, Cl_steady, alpha_steady, plot_theodorsen = True)
 
 
 plt.show()
