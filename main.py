@@ -34,7 +34,6 @@ print('3 - Sensitivity Study with respect to Number of Elements')
 print('4 - Sensitivity Study with respect to Time Step')
 print('5 - Steady Airfoil with Flap at Different Amplitudes')
 print('6 - Pitching Airfoil with Flap at Different Reduced Frequencies')
-print('7 - Unsteady Airfoil under Gust')
 
 choice = input('Select an option: ')
 
