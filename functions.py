@@ -609,7 +609,7 @@ def SensitivityNumberOfElements(A_pitch, f_pitch, pitch_0, chord, rotation_point
     CLdiff = np.zeros(len(N_distribution))
 
     for j in range(len(N_distribution)):
-        print('N =' + str(N_distribution[j]))
+        print('N = ' + str(N_distribution[j]))
         arr_kinematics = np.empty(Nt, dtype='object')
         arr_properties = np.empty(Nt, dtype='object')
         arr_wake = np.empty(Nt, dtype='object')

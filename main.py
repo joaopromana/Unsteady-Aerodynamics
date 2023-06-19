@@ -104,6 +104,8 @@ elif choice == '2':
     airfoil = fcn.VortexPanelGeometry(chord, N, pitch_0 + np.rad2deg(arr_kinematics[-1].d_pitch), rotation_point)
     X, Z, U, W, Cp = solution.FlowField(x_lim, z_lim, Nx, Nz, U_inf, 0)
 
+    fcn.PlotVelocityField(X, Z, U, W, U_mag, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
+
     # compare with steady case
     alpha_range = [pitch_0 - A_pitch, pitch_0 + A_pitch]
     N_alpha = 40
@@ -120,8 +122,6 @@ elif choice == '2':
         Cl_steady[i] = solution_properties.Cl
 
     print('Finished Simulation')
-
-    fcn.PlotVelocityField(X, Z, U, W, U_mag, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
 
     plt.show()
 
@@ -216,6 +216,8 @@ elif choice == '6':
     airfoil = fcn.VortexPanelGeometry(chord, N, pitch_0 + np.rad2deg(arr_kinematics[-1].d_pitch), rotation_point, flap_chord, beta_0 + np.rad2deg(arr_kinematics[-1].d_pitch))
     X, Z, U, W, Cp = solution.FlowField(x_lim, z_lim, Nx, Nz, U_inf, 0)
 
+    fcn.PlotVelocityField(X, Z, U, W, U_mag, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
+
     # compare with steady case
     alpha_range = [pitch_0 - A_pitch, pitch_0 + A_pitch]
     N_alpha = 40
@@ -232,8 +234,6 @@ elif choice == '6':
         Cl_steady[i] = solution_properties.Cl
 
     print('Finished Simulation')
-
-    fcn.PlotVelocityField(X, Z, U, W, U_mag, airfoil, np.linspace(x_lim[0], x_lim[1], Nx), np.linspace(z_lim[0], z_lim[1], Nz))
 
     plt.show()
 
