@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import functions as fcn
 from tqdm import tqdm
 
+plt.rcParams['text.usetex'] = True
+plt.rcParams.update({'font.size': 20})
+
 # program parameters
 rho = 1.0                       # density [kg/m^3]
 U_inf = -50                     # x-component of inertial velocity [m/s]
@@ -14,10 +17,10 @@ pitch_0 = 5                     # pitch in steady state (AoA) [degrees]
 rotation_point = 0.25 * chord   # rotation point of airfoil
 Nx = 100                        # number of elements in x-direction                     (UNSTEADY)
 Nz = 40                         # number of elements in z-direction                     (UNSTEADY)
-Nt = 350                        # number of time steps                                  (UNSTEADY)
-dt = 0.01                       # time step [sec]                                       (UNSTEADY)
+Nt = 40                        # number of time steps                                  (UNSTEADY)
+dt = 0.03141592653                     # time step [sec]                                       (UNSTEADY)
 A_pitch = 5                     # pitch amplitude (sinusoidal pitching) [degrees]       (UNSTEADY)
-kappa = 0.1                     # reduced frequency                                     (UNSTEADY)
+kappa = 0.1                # reduced frequency                                     (UNSTEADY)
 shed_vortex_factor = 0.25       # between 0.2 and 0.3                                   (UNSTEADY)
 flap_chord = 0.25               # flap length [1/c]
 beta_0 = 10                     # flap angle [degrees] 
