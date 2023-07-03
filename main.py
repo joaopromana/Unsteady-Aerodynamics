@@ -17,13 +17,13 @@ pitch_0 = 5                     # pitch in steady state (AoA) [degrees]
 rotation_point = 0.25 * chord   # rotation point of airfoil
 Nx = 100                        # number of elements in x-direction                     (UNSTEADY)
 Nz = 40                         # number of elements in z-direction                     (UNSTEADY)
-Nt = 40                        # number of time steps                                  (UNSTEADY)
-dt = 0.03141592653                     # time step [sec]                                       (UNSTEADY)
+Nt = 400                        # number of time steps                                  (UNSTEADY)
+dt = 0.01                       # time step [sec]                                       (UNSTEADY)
 A_pitch = 5                     # pitch amplitude (sinusoidal pitching) [degrees]       (UNSTEADY)
-kappa = 0.1                # reduced frequency                                     (UNSTEADY)
+kappa = 0.5                     # reduced frequency                                     (UNSTEADY)
 shed_vortex_factor = 0.25       # between 0.2 and 0.3                                   (UNSTEADY)
 flap_chord = 0.25               # flap length [1/c]
-beta_0 = 10                     # flap angle [degrees] 
+beta_0 = 20                     # flap angle [degrees] 
 
 U_mag = np.linalg.norm((U_inf, W_inf))
 T = dt * (Nt - 1)
@@ -35,7 +35,7 @@ print('1 - Steady Airfoil at Different Angles of Attack')
 print('2 - Pitching Airfoil at Different Reduced Frequencies')
 print('3 - Sensitivity Study with respect to Number of Elements')
 print('4 - Sensitivity Study with respect to Time Step')
-print('5 - Steady Airfoil with Flap at Different Amplitudes')
+print('5 - Steady Airfoil with Flap at Different Deflections')
 print('6 - Pitching Airfoil with Flap at Different Reduced Frequencies')
 
 choice = input('Select an option: ')
