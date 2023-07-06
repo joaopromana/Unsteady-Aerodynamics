@@ -17,10 +17,10 @@ pitch_0 = 5                     # pitch in steady state (AoA) [degrees]
 rotation_point = 0.25 * chord   # rotation point of airfoil
 Nx = 100                        # number of elements in x-direction                     (UNSTEADY)
 Nz = 40                         # number of elements in z-direction                     (UNSTEADY)
-Nt = 400                        # number of time steps                                  (UNSTEADY)
-dt = 0.007854                       # time step [sec]                                       (UNSTEADY)
+Nt = 200                        # number of time steps                                  (UNSTEADY)
+dt = 0.00628318531                     # time step [sec]                                       (UNSTEADY)
 A_pitch = 5                     # pitch amplitude (sinusoidal pitching) [degrees]       (UNSTEADY)
-kappa = 0.02                    # reduced frequency                                     (UNSTEADY)
+kappa = 0.05                    # reduced frequency                                     (UNSTEADY)
 shed_vortex_factor = 0.25       # between 0.2 and 0.3                                   (UNSTEADY)
 flap_chord = 0.25               # flap length [1/c]
 beta_0 = 20                     # flap angle [degrees] 
@@ -29,7 +29,6 @@ U_mag = np.linalg.norm((U_inf, W_inf))
 T = dt * (Nt - 1)
 time = np.linspace(0, T, Nt)
 f_pitch = - 2 * U_inf * kappa / (2 * np.pi * chord)
-dt = 1/(Nt*1.01*f_pitch)
 
 # Present options to user
 print('1 - Steady Airfoil at Different Angles of Attack')
