@@ -474,13 +474,13 @@ def PlotVelocityField(X, Z, U, W, U_mag, geometry, x, z):
         fig, ax = plt.subplots(figsize = (6, 6))
     else:
         fig, ax = plt.subplots(figsize = (12, 6))
-    im = ax.pcolormesh(X, Z, V_mag / U_mag, cmap = 'viridis')
+    im = ax.pcolormesh(X, Z, V_mag / U_mag, cmap = 'RdBu', vmax = 1.50, vmin = 0.5)
     fig.colorbar(im, ax = ax, label=r'$V / V_\infty$')
     # plot airfoil
     geometry.Plot(ax)
     # plot quiver
     X, Z = np.meshgrid(x, z, indexing='ij')
-    ax.quiver(X, Z, -U, W)
+    # ax.quiver(X, Z, -U, W)
     ax.set_aspect('equal')
     ax.set_xlabel(r'$x/c$')
     ax.set_ylabel(r'$z/c$')
@@ -489,7 +489,7 @@ def PlotVelocityField(X, Z, U, W, U_mag, geometry, x, z):
 def PlotPressureField(X, Z, Cp, geometry):
     # plot pressure field
     fig, ax = plt.subplots(figsize = (6, 6))
-    im = ax.pcolormesh(X, Z, Cp, cmap = 'viridis')
+    im = ax.pcolormesh(X, Z, Cp, cmap = 'bwr', vmax = 1, vmin = -1)
     ax.set_aspect('equal')
     ax.set_xlabel(r'$x/c$')
     ax.set_ylabel(r'$z/c$')

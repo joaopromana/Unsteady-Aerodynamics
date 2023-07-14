@@ -240,7 +240,7 @@ elif choice == '6':
 
     plt.show()
 
-    fcn.Theodorsen(arr_kinematics, arr_properties, time, kappa, chord, rotation_point, f_pitch, A_pitch, pitch_0, dt, Cl_steady, alpha_steady, plot_theodorsen = True)
+    fcn.Theodorsen(arr_kinematics, arr_properties, time, kappa, chord, rotation_point, f_pitch, A_pitch, pitch_0, dt, Cl_steady, alpha_steady)
 
 
 plt.show()
