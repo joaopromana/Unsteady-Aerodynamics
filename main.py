@@ -7,6 +7,11 @@ from tqdm import tqdm
 plt.rcParams['text.usetex'] = True
 plt.rcParams.update({'font.size': 20})
 
+# ================================== WARNING ===================================
+# In order to be able to plot the lift polars, dt and Nt must be defined as such
+# that an entire period of oscillation is completed!
+# ==============================================================================
+
 # program parameters
 rho = 1.0                       # density [kg/m^3]
 U_inf = -50                     # x-component of inertial velocity [m/s]
@@ -18,9 +23,9 @@ rotation_point = 0.25 * chord   # rotation point of airfoil
 Nx = 100                        # number of elements in x-direction                     (UNSTEADY)
 Nz = 40                         # number of elements in z-direction                     (UNSTEADY)
 Nt = 200                        # number of time steps                                  (UNSTEADY)
-dt = 0.02                       # time step [sec]                                       (UNSTEADY)
+dt = 0.01                       # time step [sec]                                       (UNSTEADY)
 A_pitch = 5                     # pitch amplitude (sinusoidal pitching) [degrees]       (UNSTEADY)
-kappa = 0.02                       # reduced frequency                                     (UNSTEADY)
+kappa = 0.02                    # reduced frequency                                     (UNSTEADY)
 shed_vortex_factor = 0.25       # between 0.2 and 0.3                                   (UNSTEADY)
 flap_chord = 0.25               # flap length [1/c]
 beta_0 = 20                     # flap angle [degrees] 
